@@ -24,7 +24,7 @@ everyone = re.compile(r' \- everyone:everyone$')
 def application(environ, start_response):
     path = environ.get('PATH_INFO', '/')
     method = environ.get('REQUEST_METHOD', '?')
-    remote = environ.get('REMOTE_ADDR', '-')
+    remote = environ.get('HTTP_X_REAL_IP', environ.get('REMOTE_ADDR', '-'))
 
     if path == '/':
         accept = environ.get('HTTP_ACCEPT', '')
