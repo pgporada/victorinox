@@ -1,7 +1,7 @@
 # Overview
 
 ```
-git clone https://github.com/pgporada/victornox /opt/victorinox
+git clone https://github.com/pgporada/victornox.git /opt/victorinox
 python3 -m venv /opt/victorinox/venv
 source /opt/victorinox/venv/bin/activate
 cd /opt/victorninox
