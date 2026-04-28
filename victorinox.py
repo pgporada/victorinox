@@ -18,7 +18,7 @@ headers.update(
 everyone = re.compile(r' \- everyone:everyone$')
 
 def application(environ, start_response):
-    if environ['REQUEST_URI'] == '/':
+    if environ['PATH_INFO'] == '/':
         accept = environ.get('HTTP_ACCEPT', '')
         if 'text/html' in accept:
             with open('index.html', 'rb') as f:
@@ -29,7 +29,7 @@ def application(environ, start_response):
             start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8')])
         return [body]
     try:
-        request = requests.get(f"https://portal.victorops.com{environ['REQUEST_URI']}", headers=headers, timeout=5)
+        request = requests.get(f"https://portal.victorops.com{environ['PATH_INFO']}", headers=headers, timeout=5)
 
         phrase = HTTPStatus(request.status_code).phrase
         status = f'{request.status_code} {phrase}'
