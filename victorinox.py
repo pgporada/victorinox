@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+import logging
 import re
 from http import HTTPStatus
 
 import icalendar
 import requests
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+logger = logging.getLogger('victorinox')
 
 headers = requests.utils.default_headers()
 headers.update(
@@ -18,7 +22,11 @@ headers.update(
 everyone = re.compile(r' \- everyone:everyone$')
 
 def application(environ, start_response):
-    if environ['PATH_INFO'] == '/':
+    path = environ.get('PATH_INFO', '/')
+    method = environ.get('REQUEST_METHOD', '?')
+    remote = environ.get('REMOTE_ADDR', '-')
+
+    if path == '/':
         accept = environ.get('HTTP_ACCEPT', '')
         if 'text/html' in accept:
             with open('index.html', 'rb') as f:
@@ -27,9 +35,11 @@ def application(environ, start_response):
         else:
             body = b'Victorinox - on-call calendar proxy\n\nReplace your VictorOps calendar subscription URL host with this one.\nExample: https://example.com/victorinox/webcal/...\n'
             start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8')])
+        logger.info(f'{remote} {method} {path} 200')
         return [body]
+
     try:
-        request = requests.get(f"https://portal.victorops.com{environ['PATH_INFO']}", headers=headers, timeout=5)
+        request = requests.get(f'https://portal.victorops.com{path}', headers=headers, timeout=5)
 
         phrase = HTTPStatus(request.status_code).phrase
         status = f'{request.status_code} {phrase}'
@@ -40,8 +50,10 @@ def application(environ, start_response):
         output = cal.to_ical()
 
         start_response(status, [('Content-Type', request.headers['Content-Type'])])
-
+        logger.info(f'{remote} {method} {path} {request.status_code}')
         return [output]
+
     except Exception:
+        logger.exception(f'{remote} {method} {path} 500')
         start_response('500 Internal Server Error', [('Content-Type', 'text/plain')])
         return [b'Failed']
