@@ -1,7 +1,11 @@
 # Overview
 
 ```
-pip install -r requirements.txt --user
+git clone https://github.com/pgporada/victornox /opt/victorinox
+python3 -m venv /opt/victorinox/venv
+source /opt/victorinox/venv/bin/activate
+cd /opt/victorninox
+pip install -r requirements.txt
 ```
 
 Install the nginx vhost, editting it accordingly for useful things like TLS. Install the systemd service file and start it up.
