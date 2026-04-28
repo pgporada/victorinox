@@ -19,8 +19,15 @@ everyone = re.compile(r' \- everyone:everyone$')
 
 def application(environ, start_response):
     if environ['REQUEST_URI'] == '/':
-        start_response('200 OK', [('Content-Type', 'text/plain')])
-        return [b':)\n']
+        accept = environ.get('HTTP_ACCEPT', '')
+        if 'text/html' in accept:
+            with open('index.html', 'rb') as f:
+                body = f.read()
+            start_response('200 OK', [('Content-Type', 'text/html; charset=utf-8')])
+        else:
+            body = b'Victorinox - on-call calendar proxy\n\nReplace your VictorOps calendar subscription URL host with this one.\nExample: https://example.com/victorinox/webcal/...\n'
+            start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8')])
+        return [body]
     try:
         request = requests.get(f"https://portal.victorops.com{environ['REQUEST_URI']}", headers=headers, timeout=5)
 
