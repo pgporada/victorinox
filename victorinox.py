@@ -1,40 +1,40 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-import icalendar, re, requests
+import re
+from http import HTTPStatus
+
+import icalendar
+import requests
 
 headers = requests.utils.default_headers()
 headers.update(
     {
         'Connection': 'close',
-        'User-Agent': 'Victorinox/0.2 (https://github.com/jprenken/victorinox)'
+        'User-Agent': 'Victorinox/0.3 (https://github.com/pgporada/victorinox)'
     }
 )
 
-def application(environ, start_response):
-    if environ['REQUEST_URI'] is '/':
-        status = '200'
-        response_headers = [('Content-Type', 'text/plain')]
-        start_response(status, response_headers)
-        return [':)\n']
-    try:
-        request = requests.get('https://portal.victorops.com%s' % environ['REQUEST_URI'], headers=headers, timeout=5)
+everyone = re.compile(r' \- everyone:everyone$')
 
-        status = str(request.status_code)
+def application(environ, start_response):
+    if environ['REQUEST_URI'] == '/':
+        start_response('200 OK', [('Content-Type', 'text/plain')])
+        return [b':)\n']
+    try:
+        request = requests.get(f"https://portal.victorops.com{environ['REQUEST_URI']}", headers=headers, timeout=5)
+
+        phrase = HTTPStatus(request.status_code).phrase
+        status = f'{request.status_code} {phrase}'
 
         cal = icalendar.Calendar.from_ical(request.content.decode('utf-8'))
-        everyone = re.compile(r' \- everyone:everyone$')
-        cal.subcomponents[:] = [comp for comp in cal.subcomponents if not (comp.name is 'VEVENT' and everyone.search(comp['SUMMARY']))]
+        cal.subcomponents[:] = [comp for comp in cal.subcomponents if not (comp.name == 'VEVENT' and everyone.search(comp['SUMMARY']))]
 
-        output = cal.to_ical().decode('utf-8')
+        output = cal.to_ical()
 
-        response_headers = [('Content-Type', request.headers['Content-Type'])]
+        start_response(status, [('Content-Type', request.headers['Content-Type'])])
 
-        start_response(status, response_headers)
-
-        return [output.encode('utf8')]
-    except:
-        status = '500'
-        response_headers = [('Content-Type', 'text/plain')]
-        start_response(status, response_headers)
-        return ['Failed']
+        return [output]
+    except Exception:
+        start_response('500 Internal Server Error', [('Content-Type', 'text/plain')])
+        return [b'Failed']

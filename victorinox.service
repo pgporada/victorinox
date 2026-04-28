@@ -1,0 +1,17 @@
+[Unit]
+Description=Victorinox WSGI proxy
+After=network.target
+
+[Service]
+Type=notify
+User=victorinox
+Group=victorinox
+WorkingDirectory=/opt/victorinox
+ExecStart=/opt/victorinox/venv/bin/gunicorn victorinox:application --bind 127.0.0.1:8000 --workers 2
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
