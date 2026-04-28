@@ -6,6 +6,8 @@ python3 -m venv /opt/victorinox/venv
 source /opt/victorinox/venv/bin/activate
 cd /opt/victorninox
 pip install -r requirements.txt
+useradd -r -s /sbin/nologin victorinox
+chown -R victorinox:victorinox /opt/victorinox
 ```
 
 Install the nginx vhost, editting it accordingly for useful things like TLS. Install the systemd service file and start it up.
