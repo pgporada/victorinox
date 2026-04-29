@@ -1,6 +1,6 @@
 # Overview
 
-A VictorOps calendar filtering tool because what person decided that exporting the on-call calendar should show you the entire teams on-call schedule? You and I don't need to know when GuyDingus42 is on-call, just DudeBr09.
+A VictorOps calendar filtering tool because what person decided that exporting the on-call calendar should show you the entire teams on-call schedule? You don't need to know when GuyDingus42 is on-call, just DudeBr0.
 
 ```
 git clone https://github.com/pgporada/victornox.git /opt/victorinox
@@ -21,8 +21,11 @@ systemctl reload nginx
 systemctl status nginx
 ```
 
-Give it a test!
+Give it a test! You can use it from curl or a browser, but most likely you're going to subscribe your calendar to it because that's the big brain wicked smaht thing to do. Assuming that your team calendar is `https://portal.victorops.com/api/v1/team/calendar/<redacted>.ics` you'd plug in
 ```
-curl https://example.com/victorinox
-firefox https://example.com/victorinox
+https://example.com/victorinox/api/v1/team/calendar/<redacted>.ics
+```
+
+If you wanted to filter by your own name, pass the `?user=` query parameter.
+https://example.com/victorinox/api/v1/team/calendar/<redacted>.ics?user=Dude+Br0
 ```

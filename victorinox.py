@@ -4,6 +4,7 @@
 import logging
 import re
 from http import HTTPStatus
+from urllib.parse import parse_qs
 
 import icalendar
 import requests
@@ -21,10 +22,12 @@ headers.update(
 
 everyone = re.compile(r' \- everyone:everyone$')
 
+
 def application(environ, start_response):
     path = environ.get('PATH_INFO', '/')
     method = environ.get('REQUEST_METHOD', '?')
     remote = environ.get('HTTP_X_REAL_IP', environ.get('REMOTE_ADDR', '-'))
+    qs = parse_qs(environ.get('QUERY_STRING', ''))
 
     if path == '/':
         accept = environ.get('HTTP_ACCEPT', '')
@@ -45,7 +48,18 @@ def application(environ, start_response):
         status = f'{request.status_code} {phrase}'
 
         cal = icalendar.Calendar.from_ical(request.content.decode('utf-8'))
-        cal.subcomponents[:] = [comp for comp in cal.subcomponents if not (comp.name == 'VEVENT' and everyone.search(comp['SUMMARY']))]
+
+        user = qs.get('user', [None])[0]
+        if user:
+            cal.subcomponents[:] = [
+                comp for comp in cal.subcomponents
+                if not (comp.name == 'VEVENT' and (everyone.search(comp['SUMMARY']) or not comp['SUMMARY'].startswith(f'{user} - ')))
+            ]
+        else:
+            cal.subcomponents[:] = [
+                comp for comp in cal.subcomponents
+                if not (comp.name == 'VEVENT' and everyone.search(comp['SUMMARY']))
+            ]
 
         output = cal.to_ical()
 
