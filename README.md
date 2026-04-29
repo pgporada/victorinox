@@ -30,3 +30,5 @@ If you wanted to filter by your own name, pass the `?user=` query parameter.
 ```
 https://example.com/victorinox/api/v1/team/calendar/<redacted>.ics?user=Dude+Br0
 ```
+
+![Example](./image.png)
