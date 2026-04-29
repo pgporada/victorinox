@@ -22,12 +22,13 @@ headers.update(
 
 everyone = re.compile(r' \- everyone:everyone$')
 
-
 def application(environ, start_response):
     path = environ.get('PATH_INFO', '/')
     method = environ.get('REQUEST_METHOD', '?')
     remote = environ.get('HTTP_X_REAL_IP', environ.get('REMOTE_ADDR', '-'))
-    qs = parse_qs(environ.get('QUERY_STRING', ''))
+    query = environ.get('QUERY_STRING', '')
+    uri = f'{path}?{query}' if query else path
+    qs = parse_qs(query)
 
     if path == '/':
         accept = environ.get('HTTP_ACCEPT', '')
@@ -38,7 +39,7 @@ def application(environ, start_response):
         else:
             body = b'Victorinox - on-call calendar proxy\n\nReplace your VictorOps calendar subscription URL host with this one.\nExample: https://example.com/victorinox/webcal/...\n'
             start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8')])
-        logger.info(f'{remote} {method} {path} 200')
+        logger.info(f'{remote} {method} {uri} 200')
         return [body]
 
     try:
@@ -64,10 +65,10 @@ def application(environ, start_response):
         output = cal.to_ical()
 
         start_response(status, [('Content-Type', request.headers['Content-Type'])])
-        logger.info(f'{remote} {method} {path} {request.status_code}')
+        logger.info(f'{remote} {method} {uri} {request.status_code}')
         return [output]
 
     except Exception:
-        logger.exception(f'{remote} {method} {path} 500')
+        logger.exception(f'{remote} {method} {uri} 500')
         start_response('500 Internal Server Error', [('Content-Type', 'text/plain')])
         return [b'Failed']
