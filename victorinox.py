@@ -54,14 +54,13 @@ def application(environ, start_response):
         if user:
             cal.subcomponents[:] = [
                 comp for comp in cal.subcomponents
-                if not (comp.name == 'VEVENT' and (everyone.search(comp['SUMMARY']) or not comp['SUMMARY'].startswith(f'{user} - ')))
+                if not (comp.name == 'VEVENT' and (everyone.search(str(comp['SUMMARY'])) or not str(comp['SUMMARY']).startswith(f'{user} - ')))
             ]
         else:
             cal.subcomponents[:] = [
                 comp for comp in cal.subcomponents
-                if not (comp.name == 'VEVENT' and everyone.search(comp['SUMMARY']))
+                if not (comp.name == 'VEVENT' and everyone.search(str(comp['SUMMARY'])))
             ]
-
         output = cal.to_ical()
 
         start_response(status, [('Content-Type', request.headers['Content-Type'])])
